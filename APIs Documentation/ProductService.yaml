@@ -1,0 +1,361 @@
+openapi: 3.0.3
+info:
+  title: Product Service API
+  version: 1.0.0
+  description: API for managing products and categories in the e-commerce platform
+
+tags:
+  - name: Products
+    description: Operations related to product management
+  - name: Categories
+    description: Operations related to product categories
+
+paths:
+  /products:
+    get:
+      tags:
+        - Products
+      summary: Get all products
+      description: Retrieve a list of products with optional filters and sorting
+      parameters:
+        - in: query
+          name: categoryId
+          schema:
+            type: string
+            format: uuid
+          description: Filter products by category ID
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search by product name or description
+        - in: query
+          name: isFeatured
+          schema:
+            type: boolean
+          description: Filter by featured products
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [salesCount]
+          description: Sort products by sales count (for popular products)
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Number of products per page
+      responses:
+        '200':
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+
+    post:
+      tags:
+        - Products
+      summary: Create a new product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewProduct'
+      responses:
+        '201':
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+
+  /products/{id}:
+    get:
+      tags:
+        - Products
+      summary: Get product by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A single product
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+
+    put:
+      tags:
+        - Products
+      summary: Update an existing product
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewProduct'
+      responses:
+        '200':
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+
+    delete:
+      tags:
+        - Products
+      summary: Delete a product
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Product deleted successfully
+
+  /categories:
+    get:
+      tags:
+        - Categories
+      summary: Get all categories
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+
+    post:
+      tags:
+        - Categories
+      summary: Create a new category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCategory'
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+
+  /categories/{id}:
+    get:
+      tags:
+        - Categories
+      summary: Get category by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A single category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+
+    put:
+      tags:
+        - Categories
+      summary: Update a category
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCategory'
+      responses:
+        '200':
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+
+    delete:
+      tags:
+        - Categories
+      summary: Delete a category
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Category deleted successfully
+
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the product
+        name:
+          type: string
+          description: Product name
+        description:
+          type: string
+          description: Product description
+        price:
+          type: number
+          format: float
+          description: Price of the product
+        stock:
+          type: integer
+          description: Available stock quantity
+        categoryId:
+          type: string
+          format: uuid
+          description: ID of the category this product belongs to
+        images:
+          type: array
+          description: List of product images
+          items:
+            $ref: '#/components/schemas/ProductImage'
+        discountType:
+          type: string
+          enum: [percentage, fixed]
+          description: Type of discount applied
+        discountValue:
+          type: number
+          format: float
+          description: Discount amount
+        discountStart:
+          type: string
+          format: date-time
+          description: Discount start date
+        discountEnd:
+          type: string
+          format: date-time
+          description: Discount end date
+        isFeatured:
+          type: boolean
+          description: Flag to indicate if the product is featured
+        salesCount:
+          type: integer
+          description: Number of times the product has been sold
+
+    NewProduct:
+      type: object
+      required:
+        - name
+        - price
+        - stock
+        - categoryId
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: float
+        stock:
+          type: integer
+        categoryId:
+          type: string
+          format: uuid
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductImage'
+        discountType:
+          type: string
+          enum: [percentage, fixed]
+        discountValue:
+          type: number
+          format: float
+        discountStart:
+          type: string
+          format: date-time
+        discountEnd:
+          type: string
+          format: date-time
+        isFeatured:
+          type: boolean
+        salesCount:
+          type: integer
+
+    ProductImage:
+      type: object
+      properties:
+        url:
+          type: string
+          description: URL of the image
+        altText:
+          type: string
+          description: Alt text for accessibility
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the category
+        name:
+          type: string
+          description: Category name
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID of the parent category (if any)
+
+    NewCategory:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
